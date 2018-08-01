@@ -1,0 +1,22 @@
+version: '2.1'
+services:
+  backend:
+    image: "registry.gitlab.com/myuser/myproject/backend:${PROJECT_VERSION}"  # fixme
+    command: daphne -b 0.0.0.0 -p 8000 project.asgi:application
+    restart: always
+    env_file:
+      - ./env_files/backend.env
+      - ./env_files/postgres.env
+    volumes:
+      - ./media:/app/media/
+      - ./log:/app/log/
+
+  nginx:
+    image: "registry.gitlab.com/myuser/myproject/nginx:${PROJECT_VERSION}"  # fixme
+    restart: always
+    depends_on:
+      - backend
+    volumes:
+      - ./media:/app/media/
+    ports:
+      - "127.0.0.1:8001:80"

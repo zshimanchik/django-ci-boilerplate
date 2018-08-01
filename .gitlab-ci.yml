@@ -1,0 +1,21 @@
+build:
+  stage: deploy
+  script:
+    - ./ci.sh release
+  only:
+    - master
+    - tags
+
+stage_deploy:
+  stage: deploy
+  script:
+    - ./ci.sh deploy ubuntu@stageserver
+  only:
+    - master
+
+prod_deploy:
+  stage: deploy
+  script:
+    - ./ci.sh deploy ubuntu@prodserver
+  only:
+    - tags

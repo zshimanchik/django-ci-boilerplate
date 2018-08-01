@@ -1,0 +1,41 @@
+version: '2.1'
+services:
+  postgres:
+    image: "postgres:9.6"
+    command: postgres --shared_buffers=32MB
+    restart: 'no'
+    env_file:
+      - ./env_files/postgres.env
+    ports:
+      - 5432:5432
+    volumes:
+      - postgres:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    image: "registry.gitlab.com/myuser/myproject/backend:${PROJECT_VERSION}"  # fixme
+    command: daphne -b 0.0.0.0 -p 8000 project.asgi:application
+    restart: 'no'
+    depends_on:
+      - postgres
+    env_file:
+      - ./env_files/backend.env
+      - ./env_files/postgres.env
+    volumes:
+      - ./backend:/app/
+      - ./media:/app/media/
+      - ./log:/app/log/
+
+  nginx:
+    image: "registry.gitlab.com/myuser/myproject/nginx:${PROJECT_VERSION}"  # fixme
+    build: ./nginx
+    restart: 'no'
+    depends_on:
+      - backend
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/nginx.conf
+    ports:
+      - "127.0.0.1:8001:80"
+
+volumes:
+  postgres:
